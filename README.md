@@ -35,7 +35,7 @@ This guide provides step-by-step instructions to set up and run the GGE project 
    Clone the GGE repository to your local system:
 
    ```bash
-   git clone https://github.com/your-username/giant_gipsland_earthworm.git
+   git clone https://github.com/AviatoConsulting/giant_gipsland_earthworm_fe
    cd giant_gipsland_earthworm
    ```
 
