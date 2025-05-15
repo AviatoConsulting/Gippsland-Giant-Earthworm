@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.dart';
 import 'package:giant_gipsland_earthworm_fe/core/custom_route_utills/custom_navigation.dart';
 import 'package:giant_gipsland_earthworm_fe/route/routes_constant.dart';
@@ -19,6 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     fetchTermsAndPrivacy();
 
+    InternetCheckController.instance.initConnectionCheck();
     Future.delayed(const Duration(seconds: 3)).then((value) {
       if (mounted) {
         // Check if the widget is still mounted

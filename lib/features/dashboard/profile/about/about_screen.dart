@@ -42,7 +42,8 @@ class _AboutScreenState extends State<AboutScreen> {
 
     return Scaffold(
       body: Padding(
-        padding: AppConstants.screenPadding(), // Custom padding from constants
+        padding: AppConstants.screenPadding(
+            context: context), // Custom padding from constants
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -100,6 +101,8 @@ class _AboutScreenState extends State<AboutScreen> {
                             .map((e) => Image.asset(
                                   e,
                                   fit: BoxFit.contain,
+                                  height: 100,
+                                  width: 100,
                                 ))
                             .take(3) // Take the first 3 partner logos
                             .toList(),
@@ -113,6 +116,8 @@ class _AboutScreenState extends State<AboutScreen> {
                         children: CommonAssets.partnerList
                             .map((e) => Image.asset(
                                   e,
+                                  height: 100,
+                                  width: 100,
                                   fit: BoxFit.contain,
                                 ))
                             .skip(
@@ -168,27 +173,27 @@ class _AboutScreenState extends State<AboutScreen> {
 String aboutUsText = '''
 # Welcome to the Giant Gippsland Earthworm Conservation App
 
-Welcome to our community-driven app dedicated to the conservation and study of the Giant Gippsland Earthworm (GGE). Our mission is to empower users to contribute valuable data about GGE sightings while fostering a deeper understanding and appreciation of this unique and endangered species.
+Welcome to our community driven app for the conservation and study of the Giant Gippsland Earthworm (GGE). The app has been developed to gather data about GGE habitat locations and increase understanding and appreciation of this unique endangered species.
 
 ## Our Vision
 
-We envision a world where every Giant Gippsland Earthworm sighting contributes to scientific knowledge and conservation efforts. By harnessing the power of community engagement and technology, we aim to create a comprehensive database of GGE sightings to support conservation initiatives.
+Through technology and community engagement, we aim to develop a comprehensive database of GGE habitat locations to support future conservation initiatives.
 
 ## Key Features
 
-- **Location-Based Logging:** Easily log Giant Gippsland Earthworm sightings with precise location data captured automatically or manually.
+- **Location-Based Logging:** Easily log Giant Gippsland Earthworm habitat locations with precise location data captured automatically or manually.  Data can be captured within connection or mobile range and also outside connection or mobile range, saved locally on device.
 
-- **Image Upload:** Upload photos of GGEs and their habitats to enrich sighting data and aid in identification and study.
+- **Image Upload:** Upload photos of GGE habitat locations.
 
-- **Notes and Observations:** Add detailed notes and observations about each sighting, contributing valuable context and insights to GGE research.
+- **Notes and Observations:** add notes and observations about each recording, contributing valuable context and insights to further GGE research.
 
-- **Community Contribution:** Join a passionate community dedicated to the conservation of the Giant Gippsland Earthworm, sharing sightings, insights, and conservation efforts.
+- **Community Contribution:** Join a passionate community dedicated to the conservation of the Giant Gippsland earthworm.
 
 ## Why Contribute?
 
-Every GGE sighting matters. Your contributions help scientists, conservationists, and fellow enthusiasts better understand the habitats, behaviour, and ecological roles of the Giant Gippsland Earthworm. Together, we can make a meaningful impact on the conservation of this endangered species.
+Recording each GGE habitat location matters. Your contributions help scientists to better understand the habitats, behaviour and ecological roles of the Giant Gippsland Earthworm.
 
 ## Get Involved
 
-Join us in our mission to document, learn about, and protect the Giant Gippsland Earthworm. Download the app today and start logging your GGE sightings to contribute to our shared knowledge and conservation efforts.
+Join us in our mission to further understand and protect the Giant Gippsland Earthworm by downloading the GGE App and logging your known habitat locations.
 ''';

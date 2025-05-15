@@ -3,17 +3,24 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/alert_msg_dialog.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dart';
-import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
+import 'package:giant_gipsland_earthworm_fe/core/utils/hive_service.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/audio_recording_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/location_controller.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/offline_worm_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/model/worm_model.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/controller/dashboard_controller.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/home_screen/controller/home_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/profile/profile_controller.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:toastification/toastification.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
@@ -23,6 +30,7 @@ class AddWormsController extends GetxController with StateMixin {
 
   // Controller for the note text input field
   Rx<TextEditingController> noteController = TextEditingController().obs;
+  Rx<TextEditingController> emailController = TextEditingController().obs;
 
   // Firebase Storage instance for uploading files
   final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
@@ -30,6 +38,10 @@ class AddWormsController extends GetxController with StateMixin {
   // Variables for storing lat/long and audio recording path
   RxString latLong = "".obs;
   RxString audioRecordingPath = "".obs;
+  RxString selectedLocation = "".obs;
+  RxString selectedUid = "".obs;
+
+  RxString? audioPath;
 
   //**********************************************************************//
   //----------------------------------------------------------------------//
@@ -37,16 +49,107 @@ class AddWormsController extends GetxController with StateMixin {
   //----------------------------------------------------------------------//
   //**********************************************************************//
 
+  addNewWorm({required BuildContext context}) async {
+    if (InternetCheckController.instance.isConnected.value == true) {
+      await addNewWormToDatabase(context: context);
+    } else {
+      await saveWormLocally(context);
+    }
+  }
+
+  // Method to save worm data locally
+  Future<void> saveWormLocally(BuildContext context) async {
+    String locationImg = "";
+    if (locationSelectedImage.value.isNotEmpty) {
+      locationImg = await CommonAssets.copyFileToPersistentStorage(
+          locationSelectedImage.value, false);
+    }
+    final List<String> worms = <String>[];
+    if (wormImages.isNotEmpty) {
+      for (XFile file in wormImages) {
+        String path =
+            await CommonAssets.copyFileToPersistentStorage(file.path, false);
+        worms.add(path);
+      }
+    }
+    String offlineAudioPath = "";
+    if (audioRecordingPath.value.isNotEmpty) {
+      offlineAudioPath = await CommonAssets.copyFileToPersistentStorage(
+          audioRecordingPath.value, true);
+    }
+
+    // Create the WormModel object with all necessary data
+    WormModel offlineWormModel = WormModel(
+        id: const Uuid().v1(),
+        createdByName:
+            ProfileController.instance.fetchedUserData.value.username,
+        createdOn: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        createdByUid: ProfileController.instance.fetchedUserData.value.uid,
+        createdByEmail: emailController.value.text.trim(),
+        locationImg: locationImg,
+        wormsImg: worms,
+        latLong: latLong.value,
+        audioUrl: offlineAudioPath,
+        postalCode: "",
+        country: "",
+        administrativeArea: "",
+        locality: "",
+        note: noteController.value.text.trim(),
+        search: "");
+    await HiveService().saveWorm(offlineWormModel);
+    OfflineWormsController.instance.getAllOfflineWorm();
+    Get.dialog(
+        CommonAlertMessageDialog(
+          icon: "assets/icons/done.png",
+          iconHeight: 120,
+          title: "",
+          description:
+              "The worm site has been saved locally.  You can upload it to the database once an internet connection is available.",
+          action: () {
+            Get.back();
+            clearData();
+          },
+          cancelAction: () {
+            Get.back();
+            clearData();
+            DashboardController.instance.currentPageIndex.value = 0;
+          },
+          cancelText: "Go to home",
+          buttonText: "Add another Worm Site",
+        ),
+        barrierDismissible: false);
+  }
+
   // Method to add a new worm to the Firestore database
-  Future<void> addNewWorm({required BuildContext context}) async {
+  Future<void> addNewWormToDatabase({required BuildContext context}) async {
     change(null, status: RxStatus.loading()); // Change state to loading
+    // Debug print for checking data
+    CommonAssets.startFunctionPrint(title: "Adding New Worm Data in Firestore");
+    if (ProfileController.instance.fetchedUserData.value.uid.isEmpty) {
+      await ProfileController.instance.fetchUserProfile();
+    }
     try {
+      if (LocationController.instance.placemarks.isEmpty &&
+          latLong.isNotEmpty) {
+        LocationController.instance.placemarks.value =
+            await placemarkFromCoordinates(
+                double.tryParse(latLong.split(",")[0]) ?? 0,
+                double.tryParse(latLong.split(",")[1]) ?? 0);
+      }
+
       // Upload the location image
-      final String locationImg =
-          (await uploadImages(images: [locationSelectedImage.value])).first;
+      String locationImg = "";
+      if (locationSelectedImage.value.isNotEmpty) {
+        locationImg =
+            (await uploadImages(images: [locationSelectedImage.value])).first;
+      }
 
       // Upload the worm images
-      final List<String> wormImg = await uploadImages(images: wormImages);
+      List<String> wormImg = <String>[];
+
+      if (wormImages.isNotEmpty) {
+        wormImg = await uploadImages(images: wormImages);
+      }
 
       // Variable to store audio URL if audio is recorded
       String aURL = "";
@@ -54,19 +157,16 @@ class AddWormsController extends GetxController with StateMixin {
         aURL = await uploadRecording(audioPath: audioRecordingPath.value);
       }
 
-      // Debug print for checking data
-      CommonAssets.startFunctionPrint(
-          title: "Adding New Worm Data in Firestore");
-
       // Create the WormModel object with all necessary data
       WormModel addWormModel = WormModel(
-          id: const Uuid().v1(),
+          id: selectedUid.value.isNotEmpty
+              ? selectedUid.value
+              : const Uuid().v1(),
           createdByName:
               ProfileController.instance.fetchedUserData.value.username,
           createdOn: DateTime.now().millisecondsSinceEpoch ~/ 1000,
           createdByUid: ProfileController.instance.fetchedUserData.value.uid,
-          createdByEmail:
-              ProfileController.instance.fetchedUserData.value.email,
+          createdByEmail: emailController.value.text.trim(),
           locationImg: locationImg,
           wormsImg: wormImg,
           latLong: latLong.value,
@@ -92,19 +192,6 @@ class AddWormsController extends GetxController with StateMixin {
           .doc()
           .set(addWormModel.toMap());
 
-      // Display dialog after successful addition
-      await Get.dialog(CommonAlertMessageDialog(
-          title: "Your Worm photos has been added!",
-          description: "",
-          icon: AppImagesConstant.doneIconPNG,
-          cancelText: "Go to home",
-          buttonText: "Add another worm",
-          cancelAction: () {
-            DashboardController.instance.currentPageIndex.value = 0;
-            Get.back();
-          },
-          action: () => Get.back()));
-
       // Show success toast message
       if (context.mounted) {
         showCommonToast(
@@ -113,19 +200,22 @@ class AddWormsController extends GetxController with StateMixin {
             title: "Added",
             description: "New Worm added successfully");
       }
-
+      if (selectedUid.value.isNotEmpty) {
+        HiveService().deleteWorm(selectedUid.value);
+        OfflineWormsController.instance.getAllOfflineWorm();
+      }
       // Debug print for success
       CommonAssets.successFunctionPrint(
           title: "New Worm Added Successfully in Firestore");
 
       // Change state to success
       change(null, status: RxStatus.success());
-
+      HomeController.instance.fetchWormData(isFetchMore: false);
       // Clear the data after successful submission
       clearData();
     } catch (e) {
       // Handle errors and change state to success (even if failed)
-      change(null, status: RxStatus.success());
+      change(null, status: RxStatus.error());
       if (context.mounted) {
         showCommonToast(
             context: context,
@@ -143,18 +233,59 @@ class AddWormsController extends GetxController with StateMixin {
   XFile? file; // To store the selected image file
 
   // Method to pick location image
-  Future<void> pickLocationImg(
-      {required BuildContext context, required ImageSource source}) async {
-    file = await picker.pickImage(source: source);
-    if (file != null) {
-      locationSelectedImage.value = file!.path;
-      update(); // Update the UI
-    } else {
-      if (context.mounted) {
-        showCommonToast(
+
+  Future<void> pickLocationImg({
+    required BuildContext context,
+    required ImageSource source,
+  }) async {
+    try {
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 50, // Reduce quality (1-100)
+      );
+
+      if (pickedFile != null) {
+        locationSelectedImage.value = pickedFile.path;
+        update(); // Update UI if using GetX
+      } else {
+        if (context.mounted) {
+          showCommonToast(
             context: context,
             title: "No Location Image Selected",
-            description: "No Location Image Selected, Please Select a Image.");
+            description: "No Location Image Selected, Please Select an Image.",
+          );
+        }
+      }
+    } on PlatformException catch (e) {
+      if (e.code == 'photo_access_denied') {
+        // Handle denied permission error
+        if (context.mounted) {
+          showCommonToast(
+            context: context,
+            title: "Permission Denied",
+            description:
+                "Photo access is denied. Please enable it in settings.",
+          );
+          openAppSettings();
+        }
+      } else {
+        // Handle other platform exceptions
+        if (context.mounted) {
+          showCommonToast(
+            context: context,
+            title: "Error",
+            description: "Something went wrong: ${e.message}",
+          );
+        }
+      }
+    } catch (e) {
+      // Handle unexpected errors
+      if (context.mounted) {
+        showCommonToast(
+          context: context,
+          title: "Error",
+          description: "An unexpected error occurred: ${e.toString()}",
+        );
       }
     }
   }
@@ -201,8 +332,37 @@ class AddWormsController extends GetxController with StateMixin {
           }
         }
       }
+    } on PlatformException catch (e) {
+      if (e.code == 'photo_access_denied') {
+        // Handle denied permission error
+        if (context.mounted) {
+          showCommonToast(
+            context: context,
+            title: "Permission Denied",
+            description:
+                "Photo access is denied. Please enable it in settings.",
+          );
+          openAppSettings();
+        }
+      } else {
+        // Handle other platform exceptions
+        if (context.mounted) {
+          showCommonToast(
+            context: context,
+            title: "Error",
+            description: "Something went wrong: ${e.message}",
+          );
+        }
+      }
     } catch (e) {
-      debugPrint('Error picking images: $e');
+      // Handle unexpected errors
+      if (context.mounted) {
+        showCommonToast(
+          context: context,
+          title: "Error",
+          description: "An unexpected error occurred: ${e.toString()}",
+        );
+      }
     }
   }
 
@@ -240,9 +400,14 @@ class AddWormsController extends GetxController with StateMixin {
   // Method to clear all the collected data
   void clearData() {
     latLong.value = "";
+    selectedUid.value = "";
     locationSelectedImage.value = "";
+
     wormImages.clear();
     noteController.value.clear(); // Clear the note text
+    RecordingController.instance.deleteRecording(); //Clear Recording
+    audioRecordingPath.value = "";
+    RecordingController.instance.audioPath.value = null; //Clear Recording
   }
 
   //====================== Upload Audio =======================
@@ -278,6 +443,7 @@ class AddWormsController extends GetxController with StateMixin {
   @override
   void onInit() async {
     super.onInit();
+
     change(null, status: RxStatus.success()); // Change state to success
   }
 }

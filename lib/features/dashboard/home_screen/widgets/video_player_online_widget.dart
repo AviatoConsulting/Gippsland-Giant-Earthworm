@@ -1,11 +1,11 @@
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/custom_loader.dart';
-import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
-import 'package:video_player/video_player.dart';
+import 'package:appinio_video_player/appinio_video_player.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/home_screen/controller/video_player_controller.dart';
 
 class VideoPlayerOnlineWidget extends StatefulWidget {
-  final String videoUrl; // Use a network URL
+  final String videoUrl;
 
   const VideoPlayerOnlineWidget({super.key, required this.videoUrl});
 
@@ -15,63 +15,28 @@ class VideoPlayerOnlineWidget extends StatefulWidget {
 }
 
 class _VideoPlayerOnlineWidgetState extends State<VideoPlayerOnlineWidget> {
-  FlickManager? flickManager;
+  final controller = VideoPlayerOnlineController.instance;
 
   @override
   void initState() {
+    controller.initializeVideoPlayer(videoUrl: widget.videoUrl);
     super.initState();
-    _initializeVideoPlayer();
-  }
-
-  @override
-  void dispose() {
-    flickManager?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _initializeVideoPlayer() async {
-    final videoLink = await CommonAssets.getGCSUrl(widget.videoUrl);
-    // Initialize the VideoPlayerController using the network URL
-    flickManager = FlickManager(
-        autoPlay: false,
-        autoInitialize: true,
-        videoPlayerController: VideoPlayerController.networkUrl(
-            Uri.parse(videoLink!),
-            videoPlayerOptions: VideoPlayerOptions(
-                mixWithOthers: true, allowBackgroundPlayback: false)));
-    // Optionally start playing the video once initialized
-    // _controller!.play();
-    setState(() {
-      // flickManager!.flickControlManager!.autoPause();
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (flickManager?.flickVideoManager?.isBuffering ?? true) {
-      return const CustomLoader();
-    } else {
-      return FlickVideoPlayer(
-          flickManager: flickManager!,
-          flickVideoWithControls: FlickVideoWithControls(
-            controls: FlickPortraitControls(
-                fontSize: 16,
-                iconSize: 24,
-                progressBarSettings: FlickProgressBarSettings(
-                  playedColor: Colors.black, // Progress bar played color
-                  bufferedColor: Colors.grey.shade400,
-                  handleColor: Colors.black,
-                  backgroundColor: Colors.grey,
-                )),
-            playerLoadingFallback: const Center(child: CustomLoader()),
-            iconThemeData: const IconThemeData(
-              color: Colors.black,
-              size: 24,
-            ),
-            textStyle: const TextStyle(
-              color: Colors.black,
-            ),
-          ));
-    }
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const CustomLoader();
+      }
+
+      return SizedBox(
+        height: 220,
+        width: double.infinity,
+        child: CustomVideoPlayer(
+          customVideoPlayerController: controller.customVideoPlayerController!,
+        ),
+      );
+    });
   }
 }

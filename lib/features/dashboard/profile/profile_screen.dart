@@ -21,7 +21,9 @@ class ProfileScreen extends GetView<ProfileController> {
         Theme.of(context).textTheme; // Access the theme's text styles
 
     return controller.obx(
-        (state) => Column(
+        (state) => ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
               // This widget will update based on the controller's state
               children: [
                 const ScreenTitleWidget(title: "Profile"), // Screen title
@@ -48,7 +50,7 @@ class ProfileScreen extends GetView<ProfileController> {
                               BorderRadius.circular(100), // Circular clipping
                           child: CommonAssets.getGCSNetworkImage(
                               controller.fetchedUserData.value.profileImg ?? "",
-                              AppImagesConstant.profilePNG,
+                              defaultImage: AppImagesConstant.profilePNG,
                               height: 120, // Profile image size
                               width: 120,
                               fit: BoxFit

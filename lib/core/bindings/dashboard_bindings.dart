@@ -2,9 +2,12 @@ import 'package:get/get.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/auth/onboarding/controller/onboarding_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/add_worms_controller.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/audio_recording_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/location_controller.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/controller/offline_worm_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/controller/dashboard_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/home_screen/controller/home_controller.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/home_screen/controller/video_player_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/profile/change_password/controller/change_password_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/profile/my_worms/controller/my_worm_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/profile/profile_controller.dart';
@@ -23,5 +26,8 @@ class DashboardBinding extends Bindings {
     Get.lazyPut(() => MyWormsControllers(), fenix: true);
     Get.lazyPut(() => ResourcesController(), fenix: true);
     Get.lazyPut(() => OnboardingController(), fenix: true);
+    Get.lazyPut(() => RecordingController(), fenix: true);
+    Get.lazyPut(() => OfflineWormsController(), fenix: true);
+    Get.lazyPut(() => VideoPlayerOnlineController(), fenix: true);
   }
 }

@@ -8,88 +8,108 @@ import 'package:giant_gipsland_earthworm_fe/features/auth/onboarding/controller/
 import 'package:giant_gipsland_earthworm_fe/features/auth/onboarding/widgets/onboarding_widget.dart';
 import 'package:giant_gipsland_earthworm_fe/route/routes_constant.dart';
 
-class OnboardingScreen extends GetView<OnboardingController> {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  late PageController _pageController;
+  late OnboardingController controller;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    controller = Get.put(OnboardingController());
+  }
+
+  // @override
+  // void dispose() {
+  //   _pageController.dispose();
+  //   controller.dispose();
+  //   super.dispose();
+  // }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentPage = index;
+    });
+  }
+
+  void _onNextPressed(BuildContext context) {
+    if (_currentPage == controller.listOfScreenContent.length - 1) {
+      // Navigate to sign-in screen
+      CustomNavigationHelper.navigateTo(
+        context: context,
+        routeName: RouteConstant.signIn,
+      );
+    } else {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeIn,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // The PageView allows for swiping between onboarding screens
-              Expanded(
-                child: PageView(
-                  controller: controller
-                      .pageController, // Controls the page view navigation
-                  physics:
-                      const ClampingScrollPhysics(), // Prevents overscrolling
-                  onPageChanged: (value) => controller.currentPage.value =
-                      value, // Updates the current page index
-                  children: controller.listOfScreenContent
-                      .map((element) => OnboardingWidget(
-                          onboardingModel:
-                              element)) // Displays onboarding content
-                      .toList(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const ClampingScrollPhysics(),
+              onPageChanged: _onPageChanged,
+              children: controller.listOfScreenContent
+                  .map((element) => OnboardingWidget(onboardingModel: element))
+                  .toList(),
+            ),
+          ),
+
+          // Page Indicator Dots
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              controller.listOfScreenContent.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                width: _currentPage == index ? 40.0 : 8.0,
+                height: 8.0,
+                decoration: BoxDecoration(
+                  color: _currentPage == index
+                      ? AppColor.primaryColor
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(4.0),
                 ),
               ),
+            ),
+          ),
 
-              // Indicator dots to show which page of the onboarding the user is on
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (index) {
-                  return Obx(() => AnimatedContainer(
-                        duration: const Duration(
-                            milliseconds:
-                                300), // Smooth animation when changing
-                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                        width: controller.currentPage.value == index
-                            ? 40.0
-                            : 8.0, // Adjust dot size based on page
-                        height: 8.0,
-                        decoration: BoxDecoration(
-                          color: controller.currentPage.value == index
-                              ? AppColor.primaryColor // Active dot color
-                              : Colors.grey, // Inactive dot color
-                          borderRadius: BorderRadius.circular(
-                              4.0), // Rounded corners for the dots
-                        ),
-                      ));
-                }),
-              ),
-
-              // Padding for the button at the bottom of the screen
-              Padding(
-                padding: AppConstants.screenPadding(androidTop: 25, iosTop: 25),
-                child: Column(
-                  children: [
-                    // Button changes text and action based on current page
-                    Obx(() => CommonButton(
-                          label: controller.currentPage.value ==
-                                  controller.listOfScreenContent.length - 1
-                              ? "Get Started" // Label for the last page
-                              : "Next", // Label for intermediate pages
-                          onTap: () {
-                            if (controller.currentPage.value ==
-                                controller.listOfScreenContent.length - 1) {
-                              // If on the last page, navigate to the SignIn screen
-                              CustomNavigationHelper.navigateTo(
-                                context: context,
-                                routeName: RouteConstant.signIn,
-                              );
-                            } else {
-                              // Otherwise, move to the next page in the onboarding sequence
-                              controller.pageController.nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeIn);
-                            }
-                          },
-                        )),
-                  ],
+          // Bottom Button
+          Padding(
+            padding: AppConstants.screenPadding(
+                androidTop: 25, iosTop: 25, context: context),
+            child: Column(
+              children: [
+                CommonButton(
+                  label:
+                      _currentPage == controller.listOfScreenContent.length - 1
+                          ? "Get Started"
+                          : "Next",
+                  onTap: () => _onNextPressed(context),
                 ),
-              )
-            ],
-          )),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

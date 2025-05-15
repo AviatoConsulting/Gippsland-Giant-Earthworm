@@ -19,8 +19,9 @@ class ForgotPasswordScreen extends GetView<SignInController> {
           true, // Avoid screen overflow when the keyboard is open
       body: SingleChildScrollView(
         // Ensures the screen scrolls when the keyboard appears
-        padding: AppConstants
-            .screenPadding(), // Padding for the screen, can be customized globally
+        padding: AppConstants.screenPadding(
+            context:
+                context), // Padding for the screen, can be customized globally
         child: Form(
             key: formKey, // Key to identify the form
             child: Column(
@@ -38,12 +39,13 @@ class ForgotPasswordScreen extends GetView<SignInController> {
                   style: textTheme
                       .headlineMedium, // Applying the theme's headline style
                 ),
-
+                const SizedBox(height: 5),
                 // Description of what the user will do next
                 Text(
                   "We are sending you an email to reset your password. Please check your inbox and follow the instructions to reset your password.",
-                  style: textTheme
-                      .labelLarge, // Applying the theme's labelLarge style
+                  style: textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight
+                          .w400), // Applying the theme's labelLarge style
                 ),
 
                 const SizedBox(height: 30),

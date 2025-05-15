@@ -15,12 +15,15 @@ class MyWormsControllers extends GetxController with StateMixin {
 
   RxList<WormModel> wormList = <WormModel>[].obs;
 
+  final _firestore = FirebaseFirestore.instance;
+
   //**********************************************************************//
   //----------------------------------------------------------------------//
   //                       Fetch My Worms Data                            //
   //----------------------------------------------------------------------//
   //**********************************************************************//
   Future<void> fetchWorms() async {
+    CommonAssets.enableFirestoreOfflineSupport(_firestore);
     wormList.clear();
     change(null, status: RxStatus.loading());
     try {
@@ -28,13 +31,13 @@ class MyWormsControllers extends GetxController with StateMixin {
           title: "Fetching Worm Data from Firestore in MyWorms Controller");
 
       // Fetch all documents from the 'worm_list' collection where 'createdBy_uid' matches
-      Query<Map<String, dynamic>> query =
-          FirebaseFirestore.instance.collection('worm_list');
+      Query<Map<String, dynamic>> query = _firestore.collection('worm_list');
 
       query = query.where('createdBy_uid',
           isEqualTo: ProfileController.instance.fetchedUserData.value.uid);
 
-      QuerySnapshot<Map<String, dynamic>> querySnapshot = await query.get();
+      QuerySnapshot<Map<String, dynamic>> querySnapshot =
+          await query.get(const GetOptions(source: Source.serverAndCache));
 
       // Check if documents exist
       if (querySnapshot.docs.isNotEmpty) {
@@ -72,7 +75,7 @@ class MyWormsControllers extends GetxController with StateMixin {
       await FirebaseFirestore.instance
           .collection('worm_list')
           .where('id', isEqualTo: worm.id)
-          .get()
+          .get(const GetOptions(source: Source.serverAndCache))
           .then((snapshot) {
         for (DocumentSnapshot doc in snapshot.docs) {
           doc.reference.delete();

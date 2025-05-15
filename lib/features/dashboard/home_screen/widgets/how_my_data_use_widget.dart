@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:giant_gipsland_earthworm_fe/core/custom_route_utills/custom_navigation.dart';
 import 'package:giant_gipsland_earthworm_fe/core/theme/app_colors.dart';
-import 'package:giant_gipsland_earthworm_fe/route/routes_constant.dart';
+import 'package:giant_gipsland_earthworm_fe/features/dashboard/controller/dashboard_controller.dart';
 
 class HowMyDataUseWidget extends StatelessWidget {
   const HowMyDataUseWidget({super.key});
@@ -14,30 +13,31 @@ class HowMyDataUseWidget extends StatelessWidget {
       decoration: BoxDecoration(
           color: AppColor.primaryColor,
           borderRadius: BorderRadius.circular(16)),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       child: Row(
         children: [
           Expanded(
             child: Text(
-              "How will my data be used?",
+              "Do you have worm sites on your property? Add worm sites.",
+              maxLines: 3,
               style: textTheme.titleLarge?.copyWith(
-                  fontSize: 24,
+                  fontSize: 19,
                   fontWeight: FontWeight.w500,
                   color: Colors.white),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 8),
           InkWell(
-            onTap: () => CustomNavigationHelper.navigateTo(
-                context: context, routeName: RouteConstant.howMyDataWillUse),
+            onTap: () =>
+                DashboardController.instance.currentPageIndex.value = 1,
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(18)),
               child: Text(
-                "Show",
+                "Add Worm",
                 style: textTheme.titleLarge?.copyWith(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: AppColor.primaryColor),
               ),

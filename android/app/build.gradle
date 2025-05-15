@@ -46,7 +46,7 @@ android {
     defaultConfig {
         applicationId = "com.aviato.ggearthworm"
         minSdk = 24
-        compileSdkVersion = 34
+        compileSdkVersion = 35
         targetSdkVersion = 34
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()

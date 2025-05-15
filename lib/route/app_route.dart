@@ -106,6 +106,7 @@ class AppRoutes {
       getPage: () => const DeleteUserScreen(),
       goRoutePage: (context, state) => const DeleteUserScreen(),
     ),
+
     //**********************************************************************//
     //----------------------------------------------------------------------//
     //                      Dashboard Route                                 //

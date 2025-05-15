@@ -19,6 +19,8 @@ class CommonAlertMessageDialog extends StatelessWidget {
     this.cancelText, // Text for the cancel button, optional
     this.child, // Additional widget to display in the dialog, optional
     this.cancelAction, // Custom cancel action, optional
+    this.subHeadingChild, // Subheading child which will display between heading and description
+    this.showCancel = true, // Show cancel button by default
   });
 
   final String title;
@@ -29,8 +31,10 @@ class CommonAlertMessageDialog extends StatelessWidget {
   final double? iconHeight;
   final Color? buttonColor;
   final Widget? child;
+  final Widget? subHeadingChild;
   final Function()? action;
   final Function()? cancelAction;
+  final bool showCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -53,16 +57,19 @@ class CommonAlertMessageDialog extends StatelessWidget {
           Image.asset(
             icon,
             height: iconHeight,
+            fit: BoxFit.contain,
           ),
-          const SizedBox(height: 20),
-
           // Title text
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: textTheme.titleLarge,
-          ),
+          if (title.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: textTheme.titleLarge,
+            ),
+          ],
           const SizedBox(height: 10),
+          if (subHeadingChild != null) subHeadingChild!,
 
           // Description text
           Text(
@@ -78,15 +85,17 @@ class CommonAlertMessageDialog extends StatelessWidget {
           if (child != null) child!,
           SizedBox(height: description.isEmpty ? 0 : 20),
 
-          // Cancel button
-          CommonButton(
-            label: cancelText ?? "Cancel",
-            backgroundColor: Get.isDarkMode ? Colors.white12 : Colors.white,
-            borderColor: AppColor.primaryColor,
-            onTap:
-                cancelAction ?? () => Get.back(), // Default to closing dialog
-          ),
-          const SizedBox(height: 10),
+          if (showCancel) ...[
+            // Cancel button
+            CommonButton(
+              label: cancelText ?? "Cancel",
+              backgroundColor: Get.isDarkMode ? Colors.white12 : Colors.white,
+              borderColor: AppColor.primaryColor,
+              onTap:
+                  cancelAction ?? () => Get.back(), // Default to closing dialog
+            ),
+            const SizedBox(height: 10),
+          ],
 
           // Action button
           CommonButton(

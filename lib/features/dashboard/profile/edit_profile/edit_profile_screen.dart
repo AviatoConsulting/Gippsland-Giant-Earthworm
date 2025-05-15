@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/custom_button.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/custom_loader.dart';
@@ -24,8 +25,8 @@ class EditProfileScreen extends GetView<ProfileController> {
       body: controller.obx(
           // Reacts to the controller state and shows either the content or loading state
           (state) => Padding(
-                padding: AppConstants
-                    .screenPadding(), // Padding based on app constants
+                padding: AppConstants.screenPadding(
+                    context: context), // Padding based on app constants
                 child: SingleChildScrollView(
                   // Enables scrolling for smaller screens
                   child: Column(
@@ -77,7 +78,8 @@ class EditProfileScreen extends GetView<ProfileController> {
                                                 controller.fetchedUserData.value
                                                         .profileImg ??
                                                     "",
-                                                AppImagesConstant.profilePNG,
+                                                defaultImage: AppImagesConstant
+                                                    .profilePNG,
                                                 fit: BoxFit.cover,
                                                 height: 115,
                                                 width: 115,
@@ -146,8 +148,18 @@ class EditProfileScreen extends GetView<ProfileController> {
                       CommonButton(
                         label: "Update", // Button label
                         onTap: () {
+                          if (InternetCheckController
+                                  .instance.isConnected.value ==
+                              false) {
+                            showCommonToast(
+                              context: context,
+                              title: "Internet Connection Required",
+                              description:
+                                  "Please connect to the internet and try again.",
+                            );
+                          }
                           // Validate if username is not empty before updating
-                          if (controller
+                          else if (controller
                               .usernameController.value.text.isEmpty) {
                             showCommonToast(
                                 context: context,

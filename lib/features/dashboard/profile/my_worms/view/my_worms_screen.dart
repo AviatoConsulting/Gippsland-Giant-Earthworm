@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/alert_msg_dialog.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/custom_loader.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
+import 'package:giant_gipsland_earthworm_fe/core/custom_route_utills/custom_navigation.dart';
 import 'package:giant_gipsland_earthworm_fe/core/theme/app_colors.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/controller/dashboard_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/home_screen/widgets/location_card.dart';
@@ -21,7 +24,8 @@ class MyWormsScreen extends GetView<MyWormsControllers> {
 
     return Scaffold(
       body: Padding(
-        padding: AppConstants.screenPadding(), // Padding for the screen content
+        padding: AppConstants.screenPadding(
+            context: context), // Padding for the screen content
         child: SingleChildScrollView(
           // Allows scrolling when content overflows
           child: Column(
@@ -55,10 +59,11 @@ class MyWormsScreen extends GetView<MyWormsControllers> {
                               const SizedBox(width: 30),
                               // Add button to navigate to a different page
                               InkWell(
-                                onTap: () => DashboardController
-                                    .instance
-                                    .currentPageIndex
-                                    .value = 1, // Navigate to page 1
+                                onTap: () {
+                                  CustomNavigationHelper.pop(context);
+                                  DashboardController
+                                      .instance.currentPageIndex.value = 1;
+                                }, // Navigate to page 1
                                 child: Container(
                                   padding: const EdgeInsets.all(
                                       8), // Padding for the button
@@ -79,6 +84,7 @@ class MyWormsScreen extends GetView<MyWormsControllers> {
                         )
                       // If there are worm records, display them in a list
                       : ListView.builder(
+                          padding: EdgeInsets.zero,
                           shrinkWrap:
                               true, // Ensures the ListView occupies minimal space
                           physics:
@@ -114,11 +120,25 @@ class MyWormsScreen extends GetView<MyWormsControllers> {
                                               description:
                                                   "Are you sure you want to delete this worm? This action cannot be undone, and all your data will be permanently removed.",
                                               action: () {
-                                                Get.back(); // Close the dialog
-                                                controller.deleteWorm(
-                                                    worm: item,
-                                                    context:
-                                                        context); // Delete the worm
+                                                if (InternetCheckController
+                                                        .instance
+                                                        .isConnected
+                                                        .value ==
+                                                    false) {
+                                                  showCommonToast(
+                                                    context: context,
+                                                    title:
+                                                        "Internet Connection Required",
+                                                    description:
+                                                        "Please connect to the internet and try again.",
+                                                  );
+                                                } else {
+                                                  Get.back(); // Close the dialog
+                                                  controller.deleteWorm(
+                                                      worm: item,
+                                                      context:
+                                                          context); // Delete the worm
+                                                }
                                               })),
                                       child: const Icon(
                                         Icons.delete_outline, // Delete icon

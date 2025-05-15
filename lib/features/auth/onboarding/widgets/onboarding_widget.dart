@@ -77,9 +77,10 @@ class OnboardingWidget extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: textTheme.bodyLarge?.copyWith(
                               fontSize: descFontSize,
-                              fontWeight: FontWeight.w300,
+                              fontWeight: FontWeight.w400,
                               wordSpacing: 1,
                               height: 1.4,
+                              color: Colors.black,
                               letterSpacing: 0.2),
                         ),
                       ],
