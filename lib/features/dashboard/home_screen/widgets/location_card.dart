@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
 
 class LocationCard extends StatelessWidget {
@@ -59,7 +58,9 @@ class LocationCard extends StatelessWidget {
                                 .textTheme
                                 .bodyLarge
                                 ?.copyWith(
-                                    fontSize: 15, fontWeight: FontWeight.w300),
+                                    color: Colors.black,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w400),
                           ),
                         )
                       ],
@@ -67,13 +68,6 @@ class LocationCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CommonAssets.getGCSNetworkImage(
-                    icon, AppImagesConstant.appLogo,
-                    height: 40, width: 40),
-              )
             ],
           ),
           Divider(
@@ -86,7 +80,7 @@ class LocationCard extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge
-                ?.copyWith(fontSize: 15, fontWeight: FontWeight.w300),
+                ?.copyWith(fontSize: 15, fontWeight: FontWeight.w400),
           ),
         ],
       ),

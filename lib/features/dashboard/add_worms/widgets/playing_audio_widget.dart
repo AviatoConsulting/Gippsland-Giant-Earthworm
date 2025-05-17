@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
 import 'package:giant_gipsland_earthworm_fe/core/theme/app_colors.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/add_worms/widgets/recording_waves.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String audioUrl; // URL of the audio to be played
@@ -18,6 +21,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   final AudioPlayer _audioPlayer = AudioPlayer(); // Audio player instance
   bool isPlaying = false; // State variable to track if the audio is playing
   bool isLoading = false; // State variable to track if audio is loading
+  late String cachedAudioPath; // Path to the cached audio file
 
   @override
   void initState() {
@@ -55,11 +59,23 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     });
 
     try {
-      await _audioPlayer
-          .setSourceUrl(widget.audioUrl); // Set the audio URL to the player
+      // Check if the audio file is cached
+      final file = await DefaultCacheManager().getSingleFile(widget.audioUrl);
+      if (file.existsSync()) {
+        String newPath = file.path.replaceAll('.wave', '.wav');
+        await File(file.path).rename(newPath);
+        await _audioPlayer.setSourceDeviceFile(newPath);
+      } else {
+        // If not cached, download and cache the audio file
+        final cachedFile =
+            await DefaultCacheManager().downloadFile(widget.audioUrl);
+
+        String newPath = cachedFile.file.path.replaceAll('.wave', '.wav');
+        await File(file.path).rename(newPath);
+        await _audioPlayer.setSourceDeviceFile(newPath);
+      }
     } catch (e) {
-      debugPrint(
-          "Error while setSourceUrl in audioplayer: $e"); // Log error if setting URL fails
+      debugPrint("Error while setting source URL in AudioPlayer: $e");
     } finally {
       if (mounted) {
         setState(() {

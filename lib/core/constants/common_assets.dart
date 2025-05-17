@@ -1,10 +1,14 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.dart';
+import 'package:giant_gipsland_earthworm_fe/core/utils/secure_storage/path_storage.dart';
 import 'package:giant_gipsland_earthworm_fe/route/routes_constant.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../main.dart';
 import '../common_widgets/common_snackbar.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,31 +16,34 @@ import '../theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class CommonAssets {
-  static String defaultImage = AppImagesConstant.appLogo;
-  static String somethingWentWrong =
-      "assets/commonassets/somethingWentWrong.gif";
-  static String noInternet = "assets/commonassets/noInternet.gif";
-  static String successIcon = "assets/commonassets/successIcon.gif";
-  static String upgradePlanIcon = "assets/commonassets/upgradePlan.gif";
-  static String pageNotFoundIcon = "assets/commonassets/pageNotFound.gif";
+  static String defaultImageMain = AppImagesConstant.appLogo;
   static const String alertIcon = "assets/commonassets/alert_icon.svg";
   static String privacyPolicyUrl =
       "https://docs.google.com/document/d/1IpW0R3ygLVCVdd3WiFV-rMYbeEo-EyqjBP9Ub-SM9Hs";
   static String termsAndConditionUrl =
       "https://docs.google.com/document/d/1k6TVX52SWTHKA0eDQVbAG10tcKrQFDTWCum93BrNisM";
 
-  //Generate FirebaseStorage URL
-  static Future<String?> getGCSUrl(String? icon) async {
+  static Future<String?> getGCSUrl(String? icon,
+      [bool isGetStored = true]) async {
     if (icon == null || icon == "") icon = "assets/images/biya_circle_icon.svg";
+    if (isGetStored) {
+      final data = PathStorage.readPathIfAvailable(icon);
+      if (data.isNotEmpty) {
+        return data;
+      }
+    }
+
     try {
       String url;
+
       url = await FirebaseStorage.instance
           .ref(icon)
           // .ref("${icon}_40x40.jpeg")
           .getDownloadURL();
+      PathStorage.savePath(icon, url);
       return url;
     } catch (e) {
-      debugPrint('Error occurred for $icon');
+      debugPrint('Error occurred for $e');
       return null;
     }
   }
@@ -57,12 +64,14 @@ class CommonAssets {
       double height = 40,
       double width = 40,
       BoxFit fit = BoxFit.cover,
+      required Alignment alignment,
       Color? color}) {
     return Image.asset(
-      imagePath.isEmpty ? defaultImage : imagePath,
+      imagePath.isEmpty ? defaultImageMain : imagePath,
       height: height,
       width: width,
       fit: fit,
+      alignment: alignment,
       color: color,
     );
   }
@@ -71,7 +80,8 @@ class CommonAssets {
       {String defaultImage = "assets/logo/logo.png",
       double height = 90,
       double width = 90,
-      BoxFit fit = BoxFit.cover}) {
+      BoxFit fit = BoxFit.cover,
+      required Alignment alignment}) {
     return imageUrl.isNotEmpty
         ? CachedNetworkImage(
             imageUrl: imageUrl,
@@ -81,50 +91,81 @@ class CommonAssets {
             filterQuality: FilterQuality.medium,
             errorWidget:
                 (BuildContext context, String exception, dynamic stackTrace) {
-              return getAssetsImage(height: height, width: width);
+              return getAssetsImage(
+                  height: height, width: width, alignment: alignment);
             },
           )
-        : getAssetsImage(height: height, width: width);
+        : getAssetsImage(height: height, width: width, alignment: alignment);
   }
 
-  static Widget getGCSNetworkImage(String imageUrl, String defaultImage2,
-      {double height = 40,
+  static Widget getGCSNetworkImage(String imageUrl,
+      {String? defaultImage,
+      double height = 40,
       double width = 40,
       double radius = 50,
+      Alignment alignment = Alignment.center,
       BoxFit fit = BoxFit.cover}) {
     try {
       if (imageUrl.isEmpty) {
-        return getAssetsImage(height: height, width: width, fit: fit);
+        return getAssetsImage(
+            height: height,
+            width: width,
+            alignment: alignment,
+            imagePath: defaultImage ?? defaultImageMain,
+            fit: BoxFit.contain);
       } else {
-        return FutureBuilder(
-          future: getGCSUrl(imageUrl),
-          builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-            if (snapshot.hasError) {
-              debugPrint(snapshot.error.toString());
-            }
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.data == null) {
+        final data = PathStorage.readPathIfAvailable(imageUrl);
+
+        if (data.isNotEmpty) {
+          return getNetworkImage(
+            data.toString(),
+            height: height,
+            width: width,
+            fit: fit,
+            alignment: alignment,
+            defaultImage: defaultImage ?? defaultImageMain,
+          );
+        } else {
+          return FutureBuilder(
+            future: getGCSUrl(imageUrl),
+            builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+              if (snapshot.hasError) {
+                debugPrint(
+                    "Errpr while loading img: ${snapshot.error.toString()}");
+              }
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.data == null) {
+                  return getAssetsImage(
+                      height: height,
+                      width: width,
+                      alignment: alignment,
+                      imagePath: defaultImage ?? defaultImageMain,
+                      fit: BoxFit.contain);
+                }
+                return getNetworkImage(snapshot.data.toString(),
+                    height: height,
+                    width: width,
+                    fit: fit,
+                    alignment: alignment);
+              } else {
                 return getAssetsImage(
                     height: height,
                     width: width,
-                    imagePath: defaultImage,
-                    fit: fit);
+                    alignment: alignment,
+                    imagePath: defaultImage ?? defaultImageMain,
+                    fit: BoxFit.contain);
               }
-              return getNetworkImage(snapshot.data.toString(),
-                  height: height, width: width, fit: fit);
-            } else {
-              return getAssetsImage(
-                  height: height,
-                  width: width,
-                  imagePath: defaultImage,
-                  fit: fit);
-            }
-          },
-        );
+            },
+          );
+        }
       }
     } on Exception {
       return getAssetsImage(
-          height: height, width: width, imagePath: defaultImage);
+          height: height,
+          width: width,
+          alignment: alignment,
+          imagePath: defaultImage ?? defaultImageMain,
+          fit: fit);
     }
   }
 
@@ -228,6 +269,17 @@ class CommonAssets {
     }
   }
 
+  static bool validateEmail(String email) {
+    final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return regex.hasMatch(email);
+  }
+
+  static void enableFirestoreOfflineSupport(FirebaseFirestore firestore) {
+    firestore.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+  }
+
   static void logOutFunction({required BuildContext context}) async {
     await FirebaseAuth.instance.signOut();
     Get.back();
@@ -278,4 +330,16 @@ class CommonAssets {
     AppImagesConstant.partner5PNG,
     AppImagesConstant.ausGov2PNG,
   ];
+
+  static Future<String> copyFileToPersistentStorage(
+      String tempPath, bool isAudio) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final fileName = isAudio
+        ? '${DateTime.now().millisecondsSinceEpoch}.wav'
+        : '${DateTime.now().millisecondsSinceEpoch}.png';
+    final newPath = '${directory.path}/$fileName';
+    await File(tempPath).copy(newPath);
+    // Save fileName (not newPath) persistently.
+    return newPath;
+  }
 }

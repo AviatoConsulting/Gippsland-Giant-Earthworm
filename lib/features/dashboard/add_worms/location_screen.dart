@@ -76,8 +76,6 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
     // Store the selected location in the controller
     AddWormsController.instance.latLong.value =
         "${_pickedLocation?.latitude}, ${_pickedLocation?.longitude}";
-    debugPrint(
-        "Location: ${_pickedLocation?.latitude}, ${_pickedLocation?.longitude}");
     Navigator.of(context).pop(); // Close the screen after selection
   }
 
@@ -97,6 +95,7 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         leading: InkWell(
           onTap: () => Get.back(), // Go back to the previous screen
           child: const Center(
@@ -114,13 +113,16 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
           if (_pickedLocation !=
               null) // Show check icon if a location is selected
             IconButton(
+              padding: EdgeInsets.zero,
               icon: const Icon(
-                Icons.check,
-                size: 26,
+                Icons.done_all,
+                size: 30,
+                weight: 100,
                 color: AppColor.primaryColor,
               ),
               onPressed: _selectLocation, // Confirm selection
-            )
+            ),
+          const SizedBox(width: 5),
         ],
       ),
       body: LocationController.instance.obx(

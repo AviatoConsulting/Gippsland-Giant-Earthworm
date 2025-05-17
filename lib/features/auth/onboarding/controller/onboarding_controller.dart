@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.dart';
 import 'package:giant_gipsland_earthworm_fe/features/auth/onboarding/model/onboarding_model.dart';
@@ -6,14 +5,7 @@ import 'package:giant_gipsland_earthworm_fe/features/auth/onboarding/model/onboa
 class OnboardingController extends GetxController with StateMixin {
   static OnboardingController get instance => Get.find();
 
-  PageController pageController = PageController();
   RxInt currentPage = 0.obs;
-
-  @override
-  void dispose() {
-    super.dispose();
-    pageController.dispose();
-  }
 
   //====================== Onboarding List Content =======================
   RxList<OnboardingModel> listOfScreenContent = <OnboardingModel>[

@@ -23,9 +23,11 @@ class LocationController extends GetxController with StateMixin {
     // Check if location services are enabled on the device
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      change(null, status: RxStatus.success());
       // Show a snack bar if location services are disabled
       SnackBarMessageWidget.show(
-          'Location services are disabled. Please enable the services');
+          time: 5,
+          'Please ensure that your location services are enabled. Then, close the app completely, reopen it, and try again.');
       return false;
     }
 
@@ -63,6 +65,7 @@ class LocationController extends GetxController with StateMixin {
     // Check and handle permissions before fetching the location
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) {
+      change(null, status: RxStatus.success());
       return; // If permission is not granted, exit the function
     }
 
@@ -71,14 +74,9 @@ class LocationController extends GetxController with StateMixin {
         .then((Position position) async {
       currentPosition = position; // Store the current position
 
-      // Fetch the placemark (address) details from the coordinates
-      placemarks.value =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
-
       // Store the latitude and longitude in the AddWormsController to use later
       AddWormsController.instance.latLong.value =
           "${currentPosition?.latitude}, ${currentPosition?.longitude}";
-
       change(null,
           status: RxStatus
               .success()); // Change state to success after fetching the location
@@ -93,6 +91,37 @@ class LocationController extends GetxController with StateMixin {
           title: 'Error in Location Fetched Location Controller');
       debugPrint(e); // Print the error for debugging purposes
     });
+  }
+
+  // Method to get location name (address) from latitude and longitude
+  Future<String> getLocationNameFromLatLong(
+      double latitude, double longitude) async {
+    try {
+      // Fetch placemark details using latitude and longitude
+      List<Placemark> placemarkList =
+          await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarkList.isNotEmpty) {
+        // Get the first placemark from the list
+        Placemark place = placemarkList.first;
+
+        // Construct the address string from the placemark details
+        String address = [
+          place.name,
+          place.locality,
+          place.administrativeArea,
+          place.country,
+        ].where((element) => element?.isNotEmpty ?? false).join(", ");
+
+        return address; // Return the formatted address
+      } else {
+        return "Unknown Location"; // Return a default message if no placemark found
+      }
+    } catch (e) {
+      debugPrint(
+          "Error fetching location name: $e"); // Print the error for debugging
+      return "Error fetching location name"; // Return error message
+    }
   }
 
   @override

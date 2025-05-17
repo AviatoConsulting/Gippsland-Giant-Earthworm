@@ -8,7 +8,7 @@ import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dar
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
 import 'package:giant_gipsland_earthworm_fe/features/auth/sign_up/controller/sign_up_controller.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:the_apple_sign_in/the_apple_sign_in.dart';
 
 class SocialSignInController extends GetxController with StateMixin {
@@ -73,58 +73,58 @@ class SocialSignInController extends GetxController with StateMixin {
     }
   }
 
-  // SignIn with Facebook
-  Future<void> signInWithFacebook({required BuildContext context}) async {
-    try {
-      change(null, status: RxStatus.loading()); // Set loading state
+  // // SignIn with Facebook
+  // Future<void> signInWithFacebook({required BuildContext context}) async {
+  //   try {
+  //     change(null, status: RxStatus.loading()); // Set loading state
 
-      // Trigger Facebook login
-      final LoginResult result = await FacebookAuth.instance.login();
+  //     // Trigger Facebook login
+  //     final LoginResult result = await FacebookAuth.instance.login();
 
-      // Handle successful login
-      if (result.status == LoginStatus.success) {
-        final AccessToken accessToken = result.accessToken!;
-        final OAuthCredential credential =
-            FacebookAuthProvider.credential(accessToken.tokenString);
+  //     // Handle successful login
+  //     if (result.status == LoginStatus.success) {
+  //       final AccessToken accessToken = result.accessToken!;
+  //       final OAuthCredential credential =
+  //           FacebookAuthProvider.credential(accessToken.tokenString);
 
-        // Sign in with Firebase using Facebook credentials
-        await FirebaseAuth.instance
-            .signInWithCredential(credential)
-            .then((value) async {
-          final bool isExists = await SignUpController.instance
-              .checkEmailExists(value.user?.email ?? "");
-          if (!isExists) {
-            await SignUpController.instance.storeUserDataInFirestore(
-              username: value.user?.email?.split("@")[0] ?? '',
-              email: value.user?.email ?? '',
-            );
-          }
-          change(null, status: RxStatus.success()); // Set success state
-        });
-      } else if (result.status == LoginStatus.cancelled) {
-        change(null,
-            status: RxStatus.success()); // Set success if user cancels login
-      } else {
-        debugPrint('Facebook login failed: ${result.status}');
-        change(null, status: RxStatus.success());
-      }
-    } on FirebaseAuthException catch (e) {
-      // Handle Firebase authentication exceptions
-      CommonAssets.errorFunctionPrint(statusCodeMsg: e.toString());
-      if (context.mounted) {
-        showCommonToast(
-            context: context,
-            title: "Error",
-            description: "Something went wrong, please try again later.");
-      }
-      change(null, status: RxStatus.success());
-      rethrow;
-    } catch (e) {
-      // Handle other exceptions
-      CommonAssets.errorFunctionPrint(statusCodeMsg: e.toString());
-      change(null, status: RxStatus.error()); // Set error state
-    }
-  }
+  //       // Sign in with Firebase using Facebook credentials
+  //       await FirebaseAuth.instance
+  //           .signInWithCredential(credential)
+  //           .then((value) async {
+  //         final bool isExists = await SignUpController.instance
+  //             .checkEmailExists(value.user?.email ?? "");
+  //         if (!isExists) {
+  //           await SignUpController.instance.storeUserDataInFirestore(
+  //             username: value.user?.email?.split("@")[0] ?? '',
+  //             email: value.user?.email ?? '',
+  //           );
+  //         }
+  //         change(null, status: RxStatus.success()); // Set success state
+  //       });
+  //     } else if (result.status == LoginStatus.cancelled) {
+  //       change(null,
+  //           status: RxStatus.success()); // Set success if user cancels login
+  //     } else {
+  //       debugPrint('Facebook login failed: ${result.status}');
+  //       change(null, status: RxStatus.success());
+  //     }
+  //   } on FirebaseAuthException catch (e) {
+  //     // Handle Firebase authentication exceptions
+  //     CommonAssets.errorFunctionPrint(statusCodeMsg: e.toString());
+  //     if (context.mounted) {
+  //       showCommonToast(
+  //           context: context,
+  //           title: "Error",
+  //           description: "Something went wrong, please try again later.");
+  //     }
+  //     change(null, status: RxStatus.success());
+  //     rethrow;
+  //   } catch (e) {
+  //     // Handle other exceptions
+  //     CommonAssets.errorFunctionPrint(statusCodeMsg: e.toString());
+  //     change(null, status: RxStatus.error()); // Set error state
+  //   }
+  // }
 
   // SignIn with Apple
   signInWithApple({required BuildContext context}) async {

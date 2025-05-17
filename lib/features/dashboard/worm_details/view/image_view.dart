@@ -71,8 +71,8 @@ class _FullScreenImageState extends State<FullScreenImage> {
         // Save the image to the gallery using the SaverGallery plugin
         await SaverGallery.saveImage(
           response.bodyBytes,
-          name: imagePath.split('/').last, // Image name based on file path
-          androidExistNotSave:
+          fileName: imagePath.split('/').last, // Image name based on file path
+          skipIfExists:
               false, // Don't save the image if it already exists on Android
         );
 
@@ -106,7 +106,8 @@ class _FullScreenImageState extends State<FullScreenImage> {
         child: const Icon(Icons.save_alt), // Save icon for the button
       ),
       body: Padding(
-        padding: AppConstants.screenPadding(), // Padding for the screen content
+        padding: AppConstants.screenPadding(
+            context: context), // Padding for the screen content
         child: Hero(
           tag: widget
               .imageUrl, // Hero tag for the image (used for smooth transitions)

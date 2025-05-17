@@ -37,7 +37,7 @@ void showCommonToast({
   ToastificationStyle style = ToastificationStyle.flat,
   Duration autoCloseDuration = const Duration(seconds: 3),
   AlignmentGeometry alignment =
-      kIsWeb ? Alignment.topRight : Alignment.bottomRight,
+      kIsWeb ? Alignment.topRight : Alignment.bottomCenter,
   TextDirection direction = TextDirection.ltr,
   Duration animationDuration = const Duration(milliseconds: 300),
   Widget? icon,

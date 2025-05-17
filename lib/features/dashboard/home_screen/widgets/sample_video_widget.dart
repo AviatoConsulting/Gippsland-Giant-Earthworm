@@ -34,7 +34,7 @@ class SampleVideoWidget extends StatelessWidget {
               children: [
                 CommonAssets.getGCSNetworkImage(
                   img,
-                  AppImagesConstant.appLogo,
+                  defaultImage: AppImagesConstant.appLogo,
                   width: size ?? 160,
                   height: 120,
                   fit: BoxFit.cover,

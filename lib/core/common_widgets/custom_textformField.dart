@@ -172,9 +172,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: theme.textTheme.titleSmall?.copyWith(
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFF979C9E),
+            color: Colors.black54,
           ),
           labelText: widget.labelText,
           labelStyle: theme.textTheme.titleMedium,

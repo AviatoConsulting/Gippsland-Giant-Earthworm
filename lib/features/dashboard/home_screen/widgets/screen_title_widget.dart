@@ -5,12 +5,9 @@ import 'package:giant_gipsland_earthworm_fe/core/constants/app_image_constant.da
 class ScreenTitleWidget extends StatelessWidget {
   final String title;
   final bool isBack;
-  final bool rightLogoVisible;
+  final Widget? leadingChild;
   const ScreenTitleWidget(
-      {super.key,
-      required this.title,
-      this.isBack = false,
-      this.rightLogoVisible = false});
+      {super.key, required this.title, this.isBack = false, this.leadingChild});
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +52,13 @@ class ScreenTitleWidget extends StatelessWidget {
               ),
             ),
           ),
+          if (leadingChild != null)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              right: 0,
+              child: leadingChild!,
+            ),
         ],
       ),
     );

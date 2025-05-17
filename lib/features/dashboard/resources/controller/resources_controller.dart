@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
 import 'package:giant_gipsland_earthworm_fe/features/dashboard/resources/model/resource_model.dart';
 
 class ResourcesController extends GetxController with StateMixin {
@@ -15,6 +16,8 @@ class ResourcesController extends GetxController with StateMixin {
 
   // Function to listen to real-time updates in the 'resources' collection
   void listenToResources() {
+    CommonAssets.enableFirestoreOfflineSupport(_firestore);
+
     // Listening to changes in the 'resources' collection in Firestore
     _firestore.collection('resources').snapshots().listen((snapshot) {
       // Mapping the snapshot data to ResourceModel and updating the list

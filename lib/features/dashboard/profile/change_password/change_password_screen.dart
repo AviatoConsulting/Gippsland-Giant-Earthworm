@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:giant_gipsland_earthworm_fe/core/common_controller/internet_check_controller.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/alert_msg_dialog.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/custom_button.dart';
@@ -19,7 +20,7 @@ class ChangePassword extends GetView<ChangePasswordController> {
 
     return Scaffold(
       body: Padding(
-        padding: AppConstants.screenPadding(),
+        padding: AppConstants.screenPadding(context: context),
         child: SingleChildScrollView(
           child: Form(
             key: formKey,
@@ -66,7 +67,16 @@ class ChangePassword extends GetView<ChangePasswordController> {
                     (state) => CommonButton(
                           label: "Change Password",
                           onTap: () {
-                            if (formKey.currentState!.validate()) {
+                            if (InternetCheckController
+                                    .instance.isConnected.value ==
+                                false) {
+                              showCommonToast(
+                                context: context,
+                                title: "Internet Connection Required",
+                                description:
+                                    "Please connect to the internet and try again.",
+                              );
+                            } else if (formKey.currentState!.validate()) {
                               if (controller.passwordController.value.text ==
                                   controller
                                       .confirmPasswordController.value.text) {

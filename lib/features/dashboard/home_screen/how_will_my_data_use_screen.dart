@@ -13,9 +13,14 @@ class HowWillMyDataUseScreen extends StatelessWidget {
     final textTheme =
         Theme.of(context).textTheme; // Get the text theme for styling
 
+    // Show when user is offline and open app first time
+    const String howDataUsed =
+        "All personal data collected during this project will be confidential. The collected data will be used to inform future Giant Gippsland Earthworm conservation programs and policy development. Collected data records will also be added to relevant databases such as the Biodiversity Data Repository and other existing database systems. No personal details or property details of GGE habitat sites will be publicly disclosed in any form.";
+
     return Scaffold(
       body: Padding(
-        padding: AppConstants.screenPadding(), // Custom padding from constants
+        padding: AppConstants.screenPadding(
+            context: context), // Custom padding from constants
         child: SingleChildScrollView(
           // Allows scrolling if content exceeds screen height
           child: Column(
@@ -42,10 +47,15 @@ class HowWillMyDataUseScreen extends StatelessWidget {
                         const EdgeInsets.all(16), // Padding around the content
                     child: Text(
                       HomeController.instance.homeScreenModel.value
-                          .howDataWillBeUsed, // Text coming from the controller
+                              .howDataWillBeUsed.isNotEmpty
+                          ? HomeController
+                              .instance.homeScreenModel.value.howDataWillBeUsed
+                          : howDataUsed, // Text coming from the controller
                       style: textTheme.bodyLarge?.copyWith(
+                          // color: Colors.black,
+                          fontWeight: FontWeight.w500,
                           letterSpacing:
-                              0.6), // Apply body style with slight letter spacing
+                              0.8), // Apply body style with slight letter spacing
                     ),
                   ))
             ],

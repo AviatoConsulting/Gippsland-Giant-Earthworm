@@ -9,7 +9,7 @@ class AppThemes {
 
   static const Color _lightBackgroundColor = AppColor.white;
   static const Color _lightPrimaryColor = AppColor.primaryColor;
-  static const Color _lightTextColor = AppColor.black;
+  static const Color _lightTextColor = Colors.black;
   static const Color _lightTextSecondaryColor = AppColor.greyScale5;
   static const Color _lightBackgroundSecondaryColor = AppColor.greyScale;
   static const Color _lightBackgroundAppBarColor = AppColor.greyScale7;

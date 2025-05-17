@@ -67,6 +67,7 @@ class ResourcesScreen extends GetView<ResourcesController> {
                                           e.title,
                                           style: textTheme.bodyLarge?.copyWith(
                                               fontSize: 15,
+                                              fontWeight: FontWeight.w500,
                                               color: AppColor.primaryColor,
                                               decoration: TextDecoration
                                                   .underline, // Underlining the text

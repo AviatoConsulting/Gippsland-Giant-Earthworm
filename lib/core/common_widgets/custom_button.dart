@@ -70,7 +70,7 @@ class CommonButton extends StatelessWidget {
                 color: isEnable
                     ? borderColor ?? (isDarkTheme ? Colors.black : Colors.white)
                     : AppColor.primaryColor,
-                letterSpacing: 1.5, // Adds letter spacing for label.
+                letterSpacing: 1.2, // Adds letter spacing for label.
                 fontSize: 18, // Sets font size.
                 fontWeight: FontWeight.w600, // Sets font weight.
               ),

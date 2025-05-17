@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:giant_gipsland_earthworm_fe/core/common_widgets/common_toast.dart';
 import 'package:giant_gipsland_earthworm_fe/core/constants/common_assets.dart';
+import 'package:giant_gipsland_earthworm_fe/core/helper/shared_pref_helper.dart';
 import 'package:giant_gipsland_earthworm_fe/features/auth/model/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toastification/toastification.dart';
@@ -60,15 +61,17 @@ class ProfileController extends GetxController with StateMixin {
   //----------------------------------------------------------------------//
   //**********************************************************************//
   Future<void> fetchUserProfile() async {
-    change(null, status: RxStatus.loading());
+    CommonAssets.enableFirestoreOfflineSupport(firestore);
+
+    change(null, status: RxStatus.success());
     uid.value = FirebaseAuth.instance.currentUser?.uid ?? "";
-    debugPrint("UID: ${uid.value}");
-    debugPrint("AUID: ${FirebaseAuth.instance.currentUser?.uid}");
     try {
       CommonAssets.startFunctionPrint(
           title: "Fetching User Profile in Profile Controller");
-      DocumentSnapshot<Map<String, dynamic>> snapshot =
-          await firestore.collection('user_details').doc(uid.value).get();
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await firestore
+          .collection('user_details')
+          .doc(uid.value)
+          .get(const GetOptions(source: Source.serverAndCache));
 
       if (snapshot.exists) {
         CommonAssets.startFunctionPrint(
@@ -77,6 +80,7 @@ class ProfileController extends GetxController with StateMixin {
         fetchedUserData.value = UserModel.fromMap(snapshot.data()!);
         setData();
         await updateLastLoginTime(uniqueId: fetchedUserData.value.uid);
+        GetStorageHelper().storeData('email', fetchedUserData.value.email);
         change(null, status: RxStatus.success());
       } else {
         CommonAssets.errorFunctionPrint(statusCodeMsg: "User Not Found!");
@@ -243,7 +247,7 @@ class ProfileController extends GetxController with StateMixin {
   @override
   void onInit() async {
     super.onInit();
-    // change(null, status: RxStatus.success());
+    change(null, status: RxStatus.success());
     supportEmail.value = await fetchSupportEmail();
     await fetchUserProfile();
   }

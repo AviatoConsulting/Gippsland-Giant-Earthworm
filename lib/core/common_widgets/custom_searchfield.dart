@@ -55,7 +55,7 @@ class CustomSearchTextField extends StatelessWidget {
         hintStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: Color(0XFF979C9E), // Hint text color
+          color: Colors.black54,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0), // Rounded corners
